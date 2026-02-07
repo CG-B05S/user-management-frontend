@@ -112,6 +112,8 @@ export default function UserFormModal({
           <option value="not_received">Not Received</option>
           <option value="switch_off">Switch Off</option>
           <option value="callback">Callback</option>
+          <option value="required">Required</option>
+          <option value="not_required">Not Required</option>
         </select>
 
 

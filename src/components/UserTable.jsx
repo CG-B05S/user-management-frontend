@@ -76,6 +76,17 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
         }
     };
 
+    const getRowColor = (status) => {
+        switch (status) {
+            case "required":
+                return "bg-green-200 hover:bg-green-300";
+            case "not_required":
+                return "bg-red-200 hover:bg-red-300";
+            default:
+                return "";
+        }
+    };
+
     return (
         <div>
             <Toast message={toast} />
@@ -111,7 +122,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                             </tr>
                         ) : (
                             users.map((u, index) => (
-                                <tr key={u._id}>
+                                <tr key={u._id} className={getRowColor(u.status)}>
                                     <td>{index + 1}</td>
                                     <td>{u.companyName}</td>
                                     <td>{u.contactNumber}</td>
@@ -132,6 +143,8 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                             <option value="not_received">Not Received</option>
                                             <option value="switch_off">Switch Off</option>
                                             <option value="callback">Callback</option>
+                                            <option value="required">Required</option>
+                                            <option value="not_required">Not Required</option>
                                         </select>
                                     </td>
 
