@@ -71,7 +71,7 @@ export default function Dashboard() {
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                 >
-                                    <option value="" disabled selected>Select Status</option>
+                                    <option value="">All Status</option>
                                     <option value="received">Received</option>
                                     <option value="not_received">Not Received</option>
                                     <option value="switch_off">Switch Off</option>

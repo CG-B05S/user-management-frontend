@@ -14,6 +14,9 @@ export default function UserFormModal({
     followUpDateTime: ""
   });
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const isEdit = !!editUser;
 
   useEffect(() => {
@@ -28,10 +31,14 @@ export default function UserFormModal({
           : ""
       });
     }
+    setError("");
   }, [editUser]);
 
   const handleSave = async () => {
     try {
+      setError("");
+      setLoading(true);
+
       if (isEdit) {
         await API.put(`/users/${editUser._id}`, form);
       } else {
@@ -40,8 +47,11 @@ export default function UserFormModal({
 
       onSuccess();
       close();
-    } catch {
-      alert("Save failed");
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Save failed";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,6 +63,12 @@ export default function UserFormModal({
           {isEdit ? "Edit User" : "Add User"}
         </h3>
 
+        {error && (
+          <div className="alert alert-error mb-4">
+            <span>{error}</span>
+          </div>
+        )}
+
         <input
           className="input input-bordered w-full mb-2"
           placeholder="Company Name"
@@ -60,6 +76,7 @@ export default function UserFormModal({
           onChange={(e) =>
             setForm({ ...form, companyName: e.target.value })
           }
+          disabled={loading}
         />
 
         <input
@@ -69,6 +86,7 @@ export default function UserFormModal({
           onChange={(e) =>
             setForm({ ...form, contactNumber: e.target.value })
           }
+          disabled={loading}
         />
 
         <textarea
@@ -78,6 +96,7 @@ export default function UserFormModal({
           onChange={(e) =>
             setForm({ ...form, address: e.target.value })
           }
+          disabled={loading}
         />
 
         <select
@@ -86,6 +105,7 @@ export default function UserFormModal({
           onChange={(e) =>
             setForm({ ...form, status: e.target.value })
           }
+          disabled={loading}
         >
           <option value="">Select Status</option>
           <option value="received">Received</option>
@@ -105,16 +125,18 @@ export default function UserFormModal({
               followUpDateTime: e.target.value
             })
           }
+          disabled={loading}
         />
 
         <div className="modal-action">
-          <button className="btn" onClick={close}>
+          <button className="btn" onClick={close} disabled={loading}>
             Cancel
           </button>
 
           <button
-            className="btn btn-primary"
+            className={`btn btn-primary ${loading ? "loading" : ""}`}
             onClick={handleSave}
+            disabled={loading}
           >
             {isEdit ? "Update" : "Save"}
           </button>
