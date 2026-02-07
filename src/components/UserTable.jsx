@@ -97,17 +97,17 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
 
             {/* TABLE */}
             <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="table table-sm w-full">
+                <table className="table table-sm table-fixed w-full">
                     <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white sticky top-0">
                         <tr>
-                            <th className="font-bold text-white">S.No</th>
-                            <th className="font-bold text-white">Company Name</th>
-                            <th className="font-bold text-white">Contact Number</th>
-                            <th className="font-bold text-white">Address</th>
-                            <th className="font-bold text-white">Status</th>
-                            <th className="font-bold text-white">Follow Up Date</th>
-                            <th className="font-bold text-white">Notes</th>
-                            <th className="font-bold text-white text-center">Actions</th>
+                            <th className="font-bold text-white w-14">S.No</th>
+                            <th className="font-bold text-white w-56">Company Name</th>
+                            <th className="font-bold text-white w-40">Contact Number</th>
+                            <th className="font-bold text-white w-24">Address</th>
+                            <th className="font-bold text-white w-32">Status</th>
+                            <th className="font-bold text-white w-40">Follow Up Date</th>
+                            <th className="font-bold text-white w-72">Notes</th>
+                            <th className="font-bold text-white text-center w-40">Actions</th>
                         </tr>
                     </thead>
 
@@ -129,7 +129,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                             users.map((u, index) => (
                                 <tr key={u._id} className={`${getRowColor(u.status)} transition-colors duration-200 font-medium hover:shadow-md`}>
                                     <td className="font-semibold text-slate-700 py-2 text-sm">{index + 1}</td>
-                                    <td className="font-semibold text-slate-800 py-2 text-sm">{u.companyName}</td>
+                                    <td className="font-semibold text-slate-800 py-2 text-sm break-words">{u.companyName}</td>
                                     <td className="text-slate-700 py-2 text-sm">{u.contactNumber || "N/A"}</td>
                                     <td className="text-slate-600 py-2 text-sm">{u.address || "N/A"}</td>
 
@@ -167,8 +167,8 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                             : "—"}
                                     </td>
 
-                                    <td className="text-slate-600 py-2 text-sm max-w-xs">
-                                        <div className="truncate" title={u.notes || "N/A"}>
+                                    <td className="text-slate-600 py-2 text-sm">
+                                        <div className="block w-full truncate whitespace-nowrap overflow-hidden" title={u.notes || "N/A"}>
                                             {u.notes || "N/A"}
                                         </div>
                                     </td>

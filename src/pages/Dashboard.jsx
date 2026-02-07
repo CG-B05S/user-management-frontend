@@ -19,10 +19,10 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="h-full bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
 
             {/* CONTENT */}
-            <div className="p-8 max-w-7xl mx-auto">
+            <div className="p-8 max-w-8xl mx-auto w-full flex-1">
 
                 <div className="card bg-white shadow-lg rounded-xl">
                     <div className="card-body p-8">
@@ -109,7 +109,7 @@ export default function Dashboard() {
                     onSuccess={refreshTable}
                 />
             )}
-         <Footer />
+            <Footer />
         </div>
        
     );

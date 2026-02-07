@@ -37,8 +37,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <RecaptchaBadgeVisibility />
-      <Navbar />
-      <Routes>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 min-h-0">
+          <Routes>
 
         {/* AUTH ROUTES (blocked if logged in) */}
         <Route
@@ -105,7 +107,9 @@ export default function App() {
           }
         />
 
-      </Routes>
+          </Routes>
+        </div>
+      </div>
     </BrowserRouter>
   );
 }

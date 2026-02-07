@@ -52,21 +52,17 @@ export default function UserFormModal({
   const handleSave = async () => {
     try {
       setError("");
-      
-      if (!form.contactNumber || form.contactNumber.trim() === "") {
-        setError("Phone number is required");
-        return;
-      }
 
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(form.contactNumber.trim())) {
-        setError("Phone number must be exactly 10 digits");
+      const normalizedContact = (form.contactNumber || "").replace(/\s+/g, "").trim();
+      if (!normalizedContact) {
+        setError("Phone number is required");
         return;
       }
 
       setLoading(true);
       const payload = {
         ...form,
+        contactNumber: normalizedContact,
         followUpDateTime: form.followUpDateTime
           ? new Date(form.followUpDateTime).toISOString()
           : ""
@@ -121,11 +117,11 @@ export default function UserFormModal({
           <div className="form-control">
             <label className="label">
               <span className="label-text font-semibold text-slate-700">Contact Number <span className="text-red-500">*</span></span>
-              <span className="label-text-alt text-slate-500 text-xs">10 digits only</span>
+              <span className="label-text-alt text-slate-500 text-xs">Spaces will be removed automatically</span>
             </label>
             <input
               className="input input-bordered w-full focus:input-primary focus:outline-none"
-              placeholder="Enter 10 digit phone number"
+              placeholder="Enter phone number"
               value={form.contactNumber}
               onChange={(e) =>
                 setForm({ ...form, contactNumber: e.target.value })
