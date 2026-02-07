@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
 
+const toLocalDateTimeInputValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 export default function UserFormModal({
   close,
   onSuccess,
@@ -28,9 +43,7 @@ export default function UserFormModal({
         address: editUser.address || "",
         notes: editUser.notes || "",
         status: editUser.status || "",
-        followUpDateTime: editUser.followUpDateTime
-          ? editUser.followUpDateTime.slice(0, 16)
-          : ""
+        followUpDateTime: toLocalDateTimeInputValue(editUser.followUpDateTime)
       });
     }
     setError("");
@@ -52,11 +65,17 @@ export default function UserFormModal({
       }
 
       setLoading(true);
+      const payload = {
+        ...form,
+        followUpDateTime: form.followUpDateTime
+          ? new Date(form.followUpDateTime).toISOString()
+          : ""
+      };
 
       if (isEdit) {
-        await API.put(`/users/${editUser._id}`, form);
+        await API.put(`/users/${editUser._id}`, payload);
       } else {
-        await API.post("/users", form);
+        await API.post("/users", payload);
       }
 
       onSuccess();
