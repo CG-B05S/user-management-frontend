@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import UserTable from "../components/UserTable";
 import UserFormModal from "../components/UserFormModal";
 import BulkUploadModal from "../components/BulkUploadModal";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 export default function Dashboard() {
-    const navigate = useNavigate();
-
     const [openModal, setOpenModal] = useState(false);
     const [bulkOpen, setBulkOpen] = useState(false);
     const [refresh, setRefresh] = useState(false);
@@ -15,11 +13,6 @@ export default function Dashboard() {
     // NEW STATES (moved from table)
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
-
-    const logout = () => {
-        localStorage.removeItem("token");
-        navigate("/");
-    };
 
     const refreshTable = () => {
         setRefresh(prev => !prev);
@@ -37,12 +30,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex-none">
-                    <button
-                        className="btn btn-error btn-sm"
-                        onClick={logout}
-                    >
-                        Logout
-                    </button>
+                    <ProfileDropdown />
                 </div>
             </div>
 
