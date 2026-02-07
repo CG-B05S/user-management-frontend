@@ -11,7 +11,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = location.state?.email || "";
+  const email = (location.state?.email || "").trim().toLowerCase();
 
   const [step, setStep] = useState("otp");
   const [otp, setOtp] = useState(new Array(OTP_LENGTH).fill(""));

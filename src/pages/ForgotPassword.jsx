@@ -79,12 +79,13 @@ export default function ForgotPassword() {
         );
       }
 
+      const normalizedEmail = email.trim().toLowerCase();
       await API.post("/auth/forgot-password", {
-        email,
+        email: normalizedEmail,
         recaptchaToken
       });
 
-      navigate("/reset-password", { state: { email } });
+      navigate("/reset-password", { state: { email: normalizedEmail } });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {

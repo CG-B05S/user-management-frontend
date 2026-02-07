@@ -90,9 +90,10 @@ export default function Register() {
 
       await API.post("/auth/register", {
         ...form,
+        email: form.email.trim().toLowerCase(),
         recaptchaToken
       });
-      navigate("/verify-otp", { state: { email: form.email } });
+      navigate("/verify-otp", { state: { email: form.email.trim().toLowerCase() } });
     } catch (err) {
       setApiError(err.response?.data?.message);
     } finally {

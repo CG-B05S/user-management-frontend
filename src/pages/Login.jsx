@@ -50,7 +50,11 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/login", form);
+      const payload = {
+        ...form,
+        email: form.email.trim().toLowerCase()
+      };
+      const res = await API.post("/auth/login", payload);
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         navigate("/dashboard", { state: { loggedIn: true } });

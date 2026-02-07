@@ -9,7 +9,7 @@ export default function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = location.state?.email;
+  const email = (location.state?.email || "").trim().toLowerCase();
 
   const [otp, setOtp] = useState(new Array(OTP_LENGTH).fill(""));
   const [error, setError] = useState("");
