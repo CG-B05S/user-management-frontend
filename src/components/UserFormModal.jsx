@@ -177,11 +177,12 @@ export default function UserFormModal({
           </button>
 
           <button
-            className={`btn btn-primary gap-2 ${loading ? "loading" : ""}`}
+            className="btn btn-primary gap-2"
             onClick={handleSave}
             disabled={loading}
           >
-            {isEdit ? "Update" : "Save"}
+            {loading ? (isEdit ? "Updating..." : "Saving...") : (isEdit ? "Update" : "Save")}
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
         </div>
 

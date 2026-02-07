@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import API from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
+import { validatePassword } from "../utils/passwordValidator";
+import PasswordRequirements from "../components/PasswordRequirements";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -13,6 +15,14 @@ export default function Register() {
 
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Load reCAPTCHA v3 script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
+    document.head.appendChild(script);
+  }, []);
 
   const validate = (name, value) => {
     let error = "";
@@ -24,13 +34,15 @@ export default function Register() {
     if (name === "email") {
       if (!value) error = "Email is required";
       else if (!/\S+@\S+\.\S+/.test(value))
-        error = "Invalid email format";
+        error = "Enter valid email";
     }
 
     if (name === "password") {
       if (!value) error = "Password is required";
-      else if (value.length < 6)
-        error = "Minimum 6 characters required";
+      else {
+        const { isValid } = validatePassword(value);
+        if (!isValid) error = "Password doesn't meet requirements";
+      }
     }
 
     setErrors(prev => ({ ...prev, [name]: error }));
@@ -53,12 +65,27 @@ export default function Register() {
 
   const handleRegister = async () => {
     setApiError("");
+    setLoading(true);
 
     try {
-      await API.post("/auth/register", form);
+      // Get reCAPTCHA v3 token
+      let recaptchaToken = "";
+      if (window.grecaptcha && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
+        recaptchaToken = await window.grecaptcha.execute(
+          import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+          { action: "register" }
+        );
+      }
+
+      await API.post("/auth/register", {
+        ...form,
+        recaptchaToken
+      });
       navigate("/verify-otp", { state: { email: form.email } });
     } catch (err) {
       setApiError(err.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,46 +97,79 @@ export default function Register() {
           <h2 className="card-title">Register</h2>
 
           {apiError && (
-            <div className="alert alert-error">{apiError}</div>
+            <div className="alert alert-error shadow-md">
+              <span>{apiError}</span>
+            </div>
           )}
 
-          <input
-            name="name"
-            className="input input-bordered"
-            placeholder="Name"
-            onChange={handleChange}
-          />
-          {errors.name && (
-            <p className="text-error text-sm">{errors.name}</p>
-          )}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold">Name <span className="text-red-500">*</span></span>
+            </label>
+            <input
+              name="name"
+              className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
+              placeholder="Enter your full name"
+              value={form.name}
+              onChange={handleChange}
+              disabled={loading}
+            />
+            {errors.name && (
+              <label className="label">
+                <span className="label-text-alt text-error">✗ {errors.name}</span>
+              </label>
+            )}
+          </div>
 
-          <input
-            name="email"
-            className="input input-bordered"
-            placeholder="Email"
-            onChange={handleChange}
-          />
-          {errors.email && (
-            <p className="text-error text-sm">{errors.email}</p>
-          )}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold">Email <span className="text-red-500">*</span></span>
+            </label>
+            <input
+              name="email"
+              className={`input input-bordered w-full ${errors.email ? "input-error" : ""}`}
+              placeholder="Enter your email"
+              value={form.email}
+              onChange={handleChange}
+              disabled={loading}
+            />
+            {errors.email && (
+              <label className="label">
+                <span className="label-text-alt text-error">✗ {errors.email}</span>
+              </label>
+            )}
+          </div>
 
-          <input
-            type="password"
-            name="password"
-            className="input input-bordered"
-            placeholder="Password"
-            onChange={handleChange}
-          />
-          {errors.password && (
-            <p className="text-error text-sm">{errors.password}</p>
-          )}
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold">Password <span className="text-red-500">*</span></span>
+            </label>
+            <input
+              type="password"
+              name="password"
+              className={`input input-bordered w-full ${errors.password ? "input-error" : ""}`}
+              placeholder="Enter a strong password"
+              value={form.password}
+              onChange={handleChange}
+              disabled={loading}
+            />
+            {errors.password && (
+              <label className="label">
+                <span className="label-text-alt text-error">✗ {errors.password}</span>
+              </label>
+            )}
+            {form.password && !errors.password && (
+              <PasswordRequirements password={form.password} />
+            )}
+          </div>
 
           <button
             className="btn btn-primary mt-4"
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             onClick={handleRegister}
           >
-            Register
+            {loading ? "Registering..." : "Register"}
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
 
           <p className="text-sm text-center mt-3">

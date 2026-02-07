@@ -71,10 +71,12 @@ export default function VerifyOtp() {
           />
 
           <button
-            className={`btn btn-primary mt-3 ${loading ? "loading":""}`}
+            className="btn btn-primary mt-3"
             onClick={verifyOtp}
+            disabled={loading}
           >
-            Verify OTP
+            {loading ? "Verifying..." : "Verify OTP"}
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
 
           <button

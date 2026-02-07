@@ -141,11 +141,12 @@ export default function ProfileModal({ user, onClose, onSuccess }) {
             Cancel
           </button>
           <button
-            className={`btn btn-primary ${loading ? "loading" : ""}`}
+            className="btn btn-primary"
             onClick={handleSave}
             disabled={loading}
           >
-            Save Changes
+            {loading ? "Saving..." : "Save"} Changes
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
         </div>
       </div>

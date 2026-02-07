@@ -12,6 +12,7 @@ export default function Login() {
 
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validate = (name, value) => {
     let error = "";
@@ -19,7 +20,7 @@ export default function Login() {
     if (name === "email") {
       if (!value) error = "Email is required";
       else if (!/\S+@\S+\.\S+/.test(value))
-        error = "Invalid email format";
+        error = "Enter valid email";
     }
 
     if (name === "password") {
@@ -46,13 +47,21 @@ export default function Login() {
 
   const handleLogin = async () => {
     setApiError("");
+    setLoading(true);
 
     try {
       const res = await API.post("/auth/login", form);
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        navigate("/dashboard");
+      } else {
+        setApiError("Login failed: No token received");
+      }
     } catch (err) {
-      setApiError(err.response?.data?.message);
+      setApiError(err.response?.data?.message || "Login failed");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,11 +107,18 @@ export default function Login() {
 
           <button
             className="btn btn-primary mt-4"
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             onClick={handleLogin}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
+
+          <p className="text-sm text-center mt-3">
+            <Link to="/forgot-password" className="link link-primary">
+              Forgotten Password?
+            </Link>
+          </p>
 
           <p className="text-sm text-center mt-3">
             Don't have an account?{" "}

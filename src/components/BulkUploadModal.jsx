@@ -97,9 +97,6 @@ export default function BulkUploadModal({ close, onSuccess }) {
             onChange={(e) => setFile(e.target.files[0])}
             disabled={loading || result}
           />
-          <div className="text-xs text-slate-600 mt-2">
-            Required columns: Company Name, Contact No (10 digit phone number is mandatory)
-          </div>
         </div>
 
         {/* RESULT SECTION */}

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { validatePassword } from "../utils/passwordValidator";
+import PasswordRequirements from "./PasswordRequirements";
 
 export default function PasswordModal({ onClose, onSuccess }) {
   const navigate = useNavigate();
@@ -41,8 +43,9 @@ export default function PasswordModal({ onClose, onSuccess }) {
         return;
       }
 
-      if (form.newPassword.length < 6) {
-        setError("New password must be at least 6 characters");
+      const { isValid } = validatePassword(form.newPassword);
+      if (!isValid) {
+        setError("New password doesn't meet requirements");
         return;
       }
 
@@ -112,8 +115,11 @@ export default function PasswordModal({ onClose, onSuccess }) {
               value={form.newPassword}
               onChange={handleChange}
               disabled={loading}
-              placeholder="Enter new password (min 6 chars)"
+              placeholder="Enter new password"
             />
+            {form.newPassword && (
+              <PasswordRequirements password={form.newPassword} />
+            )}
           </div>
 
           <div>
@@ -138,11 +144,12 @@ export default function PasswordModal({ onClose, onSuccess }) {
             Cancel
           </button>
           <button
-            className={`btn btn-primary ${loading ? "loading" : ""}`}
+            className="btn btn-primary"
             onClick={handleUpdate}
             disabled={loading}
           >
-            Update Password
+            {loading ? "Updating..." : "Update Password"}
+            {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
         </div>
       </div>
