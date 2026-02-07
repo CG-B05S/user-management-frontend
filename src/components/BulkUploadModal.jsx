@@ -78,9 +78,9 @@ export default function BulkUploadModal({ close, onSuccess }) {
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-2xl">
+      <div className="modal-box max-w-xl">
 
-        <h3 className="font-bold text-2xl mb-6 text-slate-800">
+        <h3 className="font-bold text-xl mb-4 text-slate-800">
           📥 Bulk Upload Users
         </h3>
 
@@ -97,6 +97,9 @@ export default function BulkUploadModal({ close, onSuccess }) {
             onChange={(e) => setFile(e.target.files[0])}
             disabled={loading || result}
           />
+          <div className="text-xs text-slate-600 mt-2">
+            Required columns: Company Name, Contact No (10 digit phone number is mandatory)
+          </div>
         </div>
 
         {/* RESULT SECTION */}

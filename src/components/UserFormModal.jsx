@@ -37,6 +37,18 @@ export default function UserFormModal({
   const handleSave = async () => {
     try {
       setError("");
+      
+      if (!form.contactNumber || form.contactNumber.trim() === "") {
+        setError("Phone number is required");
+        return;
+      }
+
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(form.contactNumber.trim())) {
+        setError("Phone number must be exactly 10 digits");
+        return;
+      }
+
       setLoading(true);
 
       if (isEdit) {
@@ -57,9 +69,9 @@ export default function UserFormModal({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box max-w-lg">
+      <div className="modal-box max-w-md">
 
-        <h3 className="font-bold text-2xl mb-6 text-slate-800">
+        <h3 className="font-bold text-xl mb-4 text-slate-800">
           {isEdit ? "✏️ Edit User" : "Add New User"}
         </h3>
 
@@ -69,7 +81,7 @@ export default function UserFormModal({
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="form-control">
             <label className="label">
               <span className="label-text font-semibold text-slate-700">Company Name</span>
@@ -87,16 +99,18 @@ export default function UserFormModal({
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-semibold text-slate-700">Contact Number</span>
+              <span className="label-text font-semibold text-slate-700">Contact Number <span className="text-red-500">*</span></span>
+              <span className="label-text-alt text-slate-500 text-xs">10 digits only</span>
             </label>
             <input
               className="input input-bordered w-full focus:input-primary focus:outline-none"
-              placeholder="Enter phone number"
+              placeholder="Enter 10 digit phone number"
               value={form.contactNumber}
               onChange={(e) =>
                 setForm({ ...form, contactNumber: e.target.value })
               }
               disabled={loading}
+              required
             />
           </div>
 

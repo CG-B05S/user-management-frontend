@@ -193,6 +193,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                 </table>
 
                 {/* PAGINATION */}
+                {totalPages > 0 && (
                 <div className="flex justify-end items-center py-4 px-4 bg-slate-50">
                     <div className="join">
                         <button
@@ -220,6 +221,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                         </button>
                     </div>
                 </div>
+                )}
 
             </div>
             {showDeleteModal && (
