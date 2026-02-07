@@ -57,86 +57,113 @@ export default function UserFormModal({
 
   return (
     <div className="modal modal-open">
-      <div className="modal-box">
+      <div className="modal-box max-w-lg">
 
-        <h3 className="font-bold text-lg mb-4">
-          {isEdit ? "Edit User" : "Add User"}
+        <h3 className="font-bold text-2xl mb-6 text-slate-800">
+          {isEdit ? "✏️ Edit User" : "Add New User"}
         </h3>
 
         {error && (
-          <div className="alert alert-error mb-4">
-            <span>{error}</span>
+          <div className="alert alert-error mb-5 shadow-md">
+            <span className="font-semibold">{error}</span>
           </div>
         )}
 
-        <input
-          className="input input-bordered w-full mb-2"
-          placeholder="Company Name"
-          value={form.companyName}
-          onChange={(e) =>
-            setForm({ ...form, companyName: e.target.value })
-          }
-          disabled={loading}
-        />
+        <div className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Company Name</span>
+            </label>
+            <input
+              className="input input-bordered w-full focus:input-primary focus:outline-none"
+              placeholder="Enter company name"
+              value={form.companyName}
+              onChange={(e) =>
+                setForm({ ...form, companyName: e.target.value })
+              }
+              disabled={loading}
+            />
+          </div>
 
-        <input
-          className="input input-bordered w-full mb-2"
-          placeholder="Contact Number"
-          value={form.contactNumber}
-          onChange={(e) =>
-            setForm({ ...form, contactNumber: e.target.value })
-          }
-          disabled={loading}
-        />
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Contact Number</span>
+            </label>
+            <input
+              className="input input-bordered w-full focus:input-primary focus:outline-none"
+              placeholder="Enter phone number"
+              value={form.contactNumber}
+              onChange={(e) =>
+                setForm({ ...form, contactNumber: e.target.value })
+              }
+              disabled={loading}
+            />
+          </div>
 
-        <textarea
-          className="textarea textarea-bordered w-full mb-2"
-          placeholder="Address"
-          value={form.address}
-          onChange={(e) =>
-            setForm({ ...form, address: e.target.value })
-          }
-          disabled={loading}
-        />
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Address</span>
+            </label>
+            <textarea
+              className="textarea textarea-bordered w-full focus:textarea-primary focus:outline-none"
+              placeholder="Enter address"
+              value={form.address}
+              onChange={(e) =>
+                setForm({ ...form, address: e.target.value })
+              }
+              disabled={loading}
+              rows="3"
+            />
+          </div>
 
-        <select
-          className="select select-bordered w-full mb-2"
-          value={form.status}
-          onChange={(e) =>
-            setForm({ ...form, status: e.target.value })
-          }
-          disabled={loading}
-        >
-          <option value="">Select Status</option>
-          <option value="received">Received</option>
-          <option value="not_received">Not Received</option>
-          <option value="switch_off">Switch Off</option>
-          <option value="callback">Callback</option>
-          <option value="required">Required</option>
-          <option value="not_required">Not Required</option>
-        </select>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Status</span>
+            </label>
+            <select
+              className="select select-bordered w-full focus:select-primary focus:outline-none"
+              value={form.status}
+              onChange={(e) =>
+                setForm({ ...form, status: e.target.value })
+              }
+              disabled={loading}
+            >
+              <option value="">Select Status</option>
+              <option value="received">Received</option>
+              <option value="not_received">Not Received</option>
+              <option value="switch_off">Switch Off</option>
+              <option value="callback">Callback</option>
+              <option value="required">Required</option>
+              <option value="not_required">Not Required</option>
+            </select>
+          </div>
 
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Follow Up Date & Time</span>
+            </label>
+            <input
+              type="datetime-local"
+              className="input input-bordered w-full focus:input-primary focus:outline-none"
+              value={form.followUpDateTime}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  followUpDateTime: e.target.value
+                })
+              }
+              disabled={loading}
+            />
+          </div>
+        </div>
 
-        <input
-          type="datetime-local"
-          className="input input-bordered w-full"
-          value={form.followUpDateTime}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              followUpDateTime: e.target.value
-            })
-          }
-          disabled={loading}
-        />
-
-        <div className="modal-action">
-          <button className="btn" onClick={close} disabled={loading}>
+        <div className="modal-action mt-8">
+          <button className="btn btn-outline" onClick={close} disabled={loading}>
             Cancel
           </button>
 
           <button
-            className={`btn btn-primary ${loading ? "loading" : ""}`}
+            className={`btn btn-primary gap-2 ${loading ? "loading" : ""}`}
             onClick={handleSave}
             disabled={loading}
           >
