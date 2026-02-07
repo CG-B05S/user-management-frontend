@@ -3,6 +3,7 @@ import UserTable from "../components/UserTable";
 import UserFormModal from "../components/UserFormModal";
 import BulkUploadModal from "../components/BulkUploadModal";
 import ProfileDropdown from "../components/ProfileDropdown";
+import Footer from "./Footer";
 
 export default function Dashboard() {
     const [openModal, setOpenModal] = useState(false);
@@ -122,6 +123,8 @@ export default function Dashboard() {
                     onSuccess={refreshTable}
                 />
             )}
+         <Footer />
         </div>
+       
     );
 }
