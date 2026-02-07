@@ -106,6 +106,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                             <th className="font-bold text-white">Address</th>
                             <th className="font-bold text-white">Status</th>
                             <th className="font-bold text-white">Follow Up Date</th>
+                            <th className="font-bold text-white">Notes</th>
                             <th className="font-bold text-white text-center">Actions</th>
                         </tr>
                     </thead>
@@ -113,7 +114,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                     <tbody className="divide-y divide-slate-200">
                         {users.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="text-center py-16">
+                                <td colSpan="8" className="text-center py-16">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="text-xl font-semibold text-slate-600">
                                             📭 No users found
@@ -164,6 +165,12 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                                 minute: '2-digit' 
                                             })
                                             : "—"}
+                                    </td>
+
+                                    <td className="text-slate-600 py-2 text-sm max-w-xs">
+                                        <div className="truncate" title={u.notes || "N/A"}>
+                                            {u.notes || "N/A"}
+                                        </div>
                                     </td>
 
                                     <td className="flex gap-1 justify-center py-2">

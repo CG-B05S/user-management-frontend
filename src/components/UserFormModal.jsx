@@ -10,6 +10,7 @@ export default function UserFormModal({
     companyName: "",
     contactNumber: "",
     address: "",
+    notes: "",
     status: "",
     followUpDateTime: ""
   });
@@ -25,6 +26,7 @@ export default function UserFormModal({
         companyName: editUser.companyName || "",
         contactNumber: editUser.contactNumber || "",
         address: editUser.address || "",
+        notes: editUser.notes || "",
         status: editUser.status || "",
         followUpDateTime: editUser.followUpDateTime
           ? editUser.followUpDateTime.slice(0, 16)
@@ -167,6 +169,22 @@ export default function UserFormModal({
                 })
               }
               disabled={loading}
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Notes</span>
+            </label>
+            <textarea
+              className="textarea textarea-bordered w-full focus:textarea-primary focus:outline-none"
+              placeholder="Call notes or follow-up details"
+              value={form.notes}
+              onChange={(e) =>
+                setForm({ ...form, notes: e.target.value })
+              }
+              disabled={loading}
+              rows="3"
             />
           </div>
         </div>

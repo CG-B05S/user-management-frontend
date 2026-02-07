@@ -8,13 +8,31 @@ export default function ForgotPassword() {
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // Load reCAPTCHA v3 script
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
-    document.head.appendChild(script);
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (!siteKey) return;
+
+    const scriptId = "recaptcha-v3-script";
+    let script = document.getElementById(scriptId);
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+      document.head.appendChild(script);
+    }
+
+    document.querySelectorAll(".grecaptcha-badge").forEach((badge) => {
+      badge.style.visibility = "visible";
+      badge.style.opacity = "1";
+    });
+
+    return () => {
+      document.querySelectorAll(".grecaptcha-badge").forEach((badge) => badge.remove());
+      script?.remove();
+    };
   }, []);
 
   const validateEmail = (value) => {
@@ -44,7 +62,6 @@ export default function ForgotPassword() {
 
   const handleSendOTP = async () => {
     setError("");
-    setSuccess("");
 
     if (!validateEmail(email)) {
       return;
@@ -66,10 +83,8 @@ export default function ForgotPassword() {
         email,
         recaptchaToken
       });
-      setSuccess("OTP sent to your email");
-      setTimeout(() => {
-        navigate("/reset-password", { state: { email } });
-      }, 1500);
+
+      navigate("/reset-password", { state: { email } });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP");
     } finally {
@@ -83,18 +98,12 @@ export default function ForgotPassword() {
         <div className="card-body">
           <h2 className="card-title">Forgot Password</h2>
           <p className="text-sm text-slate-600">
-            Enter your email address and we'll send you an OTP to reset your password.
+            Enter your email address and we&apos;ll send you an OTP to reset your password.
           </p>
 
           {error && (
             <div className="alert alert-error shadow-md">
               <span>{error}</span>
-            </div>
-          )}
-
-          {success && (
-            <div className="alert alert-success shadow-md">
-              <span>{success}</span>
             </div>
           )}
 
@@ -112,7 +121,7 @@ export default function ForgotPassword() {
             />
             {emailError && (
               <label className="label">
-                <span className="label-text-alt text-error">✗ {emailError}</span>
+                <span className="label-text-alt text-error">x {emailError}</span>
               </label>
             )}
           </div>
@@ -122,7 +131,7 @@ export default function ForgotPassword() {
             onClick={handleSendOTP}
             disabled={!isFormValid || loading}
           >
-            {loading ? "Sending..." : "Send OTP"}
+            {loading ? "Sending..." : "Continue"}
             {loading && <span className="loading loading-spinner loading-sm"></span>}
           </button>
 
@@ -136,7 +145,7 @@ export default function ForgotPassword() {
           </p>
 
           <p className="text-sm text-center">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link to="/register" className="link link-primary">
               Register
             </Link>

@@ -1,236 +1,185 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import API from "../services/api";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import OtpInput from "../components/OtpInput";
 import { validatePassword } from "../utils/passwordValidator";
 import PasswordRequirements from "../components/PasswordRequirements";
+
+const OTP_LENGTH = 6;
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("");
-  const [form, setForm] = useState({
-    otp: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
 
-  const [fieldErrors, setFieldErrors] = useState({
-    otp: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
+  const email = location.state?.email || "";
 
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState("otp");
+  const [otp, setOtp] = useState(new Array(OTP_LENGTH).fill(""));
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(60);
 
   useEffect(() => {
-    const state = location.state?.email;
-    if (state) {
-      setEmail(state);
+    if (!email) {
+      navigate("/forgot-password");
+    }
+  }, [email, navigate]);
+
+  useEffect(() => {
+    if (cooldown <= 0 || step !== "otp") return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown, step]);
+
+  const passwordValidation = useMemo(() => validatePassword(newPassword), [newPassword]);
+  const otpValue = otp.join("");
+
+  const handleContinueFromOtp = () => {
+    if (otpValue.length !== OTP_LENGTH) {
+      setError("Please enter a valid 6-digit OTP");
+      return;
     }
 
-    // Load reCAPTCHA v3 script
-    const script = document.createElement("script");
-    script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
-    document.head.appendChild(script);
-  }, [location.state]);
-
-  const validateField = (name, value) => {
-    let fieldError = "";
-
-    if (name === "otp") {
-      if (!value) fieldError = "OTP is required";
-      else if (!/^\d{6}$/.test(value.trim())) fieldError = "OTP must be 6 digits";
-    }
-
-    if (name === "confirmPassword") {
-      if (!value) fieldError = "Confirm password is required";
-      else if (form.newPassword && value !== form.newPassword) fieldError = "Passwords do not match";
-    }
-
-    setFieldErrors(prev => ({ ...prev, [name]: fieldError }));
-    return !fieldError;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    if (value) {
-      validateField(name, value);
-    } else {
-      setFieldErrors(prev => ({ ...prev, [name]: "" }));
-    }
-  };
-
-  const isFormValid =
-    email &&
-    form.otp &&
-    form.newPassword &&
-    form.confirmPassword &&
-    !fieldErrors.otp &&
-    !fieldErrors.newPassword &&
-    !fieldErrors.confirmPassword &&
-    form.newPassword === form.confirmPassword;
-
-  const handleReset = async () => {
     setError("");
-    setSuccess("");
+    setStep("password");
+  };
 
-    // Validate all fields
-    const otpValid = validateField("otp", form.otp);
-    const passwordValid = validateField("newPassword", form.newPassword);
-    const confirmValid = validateField("confirmPassword", form.confirmPassword);
+  const handleResendOtp = async () => {
+    try {
+      setResendLoading(true);
+      setError("");
 
-    if (!otpValid || !passwordValid || !confirmValid) {
+      await API.post("/auth/forgot-password", { email });
+      setCooldown(60);
+      setOtp(new Array(OTP_LENGTH).fill(""));
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!passwordValidation.isValid) {
+      setError("Please enter a strong password");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
     try {
       setLoading(true);
-
-      // Get reCAPTCHA v3 token
-      let recaptchaToken = "";
-      if (window.grecaptcha && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-        recaptchaToken = await window.grecaptcha.execute(
-          import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-          { action: "reset_password" }
-        );
-      }
+      setError("");
 
       await API.post("/auth/reset-password", {
         email,
-        otp: form.otp,
-        newPassword: form.newPassword,
-        confirmPassword: form.confirmPassword,
-        recaptchaToken
+        otp: otpValue,
+        newPassword,
+        confirmPassword
       });
-      setSuccess("Password reset successfully! Redirecting to login...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.message || "Password reset failed");
+      setError(err.response?.data?.message || "Reset failed");
+      if ((err.response?.data?.message || "").toLowerCase().includes("otp")) {
+        setStep("otp");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title">Reset Password</h2>
-          <p className="text-sm text-slate-600">
-            Enter the OTP from your email and set a new password.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
+      <div className="w-full max-w-md bg-base-100 shadow-xl rounded-2xl p-8">
+        <h2 className="text-2xl font-semibold text-center">Reset Password</h2>
 
-          {error && (
-            <div className="alert alert-error shadow-md">
-              <span>{error}</span>
+        {error && <div className="alert alert-error mt-4">{error}</div>}
+
+        {step === "otp" && (
+          <>
+            <p className="text-sm text-center mt-2 text-base-content/70">
+              Enter the OTP sent to <span className="font-medium">{email}</span>
+            </p>
+
+            <div className="mt-6">
+              <OtpInput value={otp} onChange={setOtp} disabled={loading || resendLoading} />
             </div>
-          )}
 
-          {success && (
-            <div className="alert alert-success shadow-md">
-              <span>{success}</span>
+            <button
+              className="btn btn-primary w-full mt-6"
+              onClick={handleContinueFromOtp}
+              disabled={otpValue.length !== OTP_LENGTH || loading || resendLoading}
+            >
+              Continue
+            </button>
+
+            <div className="text-center text-sm mt-4 text-base-content/70">
+              Didn&apos;t receive OTP?{" "}
+              <button
+                type="button"
+                className={`font-medium ${
+                  cooldown > 0 || resendLoading ? "text-base-content/40 cursor-not-allowed" : "text-primary hover:underline"
+                }`}
+                disabled={cooldown > 0 || resendLoading}
+                onClick={handleResendOtp}
+              >
+                {cooldown > 0 ? `Resend in ${cooldown}s` : resendLoading ? "Sending..." : "Resend OTP"}
+              </button>
             </div>
-          )}
+          </>
+        )}
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Email</span>
-            </label>
-            <input
-              type="email"
-              className="input input-bordered w-full bg-slate-50"
-              value={email}
-              disabled={true}
-              placeholder="Your email"
-            />
-          </div>
+        {step === "password" && (
+          <>
+            <p className="text-sm text-center mt-2 text-base-content/70">Set your new password</p>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">OTP <span className="text-red-500">*</span></span>
-              <span className="label-text-alt text-slate-500">6 digits</span>
-            </label>
-            <input
-              type="text"
-              className={`input input-bordered w-full ${fieldErrors.otp ? "input-error" : ""}`}
-              name="otp"
-              value={form.otp}
-              onChange={handleChange}
-              disabled={loading}
-              placeholder="Enter 6-digit OTP from email"
-              maxLength="6"
-              inputMode="numeric"
-            />
-            {fieldErrors.otp && (
-              <label className="label">
-                <span className="label-text-alt text-error">✗ {fieldErrors.otp}</span>
-              </label>
-            )}
-          </div>
-
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">New Password <span className="text-red-500">*</span></span>
-            </label>
             <input
               type="password"
-              className={`input input-bordered w-full ${fieldErrors.newPassword ? "input-error" : ""}`}
-              name="newPassword"
-              value={form.newPassword}
-              onChange={handleChange}
+              className="input input-bordered w-full mt-6"
+              placeholder="New password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
               disabled={loading}
-              placeholder="Minimum 8 characters"
             />
-            {fieldErrors.newPassword && (
-              <label className="label">
-                <span className="label-text-alt text-error">✗ {fieldErrors.newPassword}</span>
-              </label>
-            )}
-            {form.newPassword && !fieldErrors.newPassword && (
-              <PasswordRequirements password={form.newPassword} />
-            )}
-          </div>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Confirm Password <span className="text-red-500">*</span></span>
-            </label>
+            {newPassword && <PasswordRequirements password={newPassword} />}
+
             <input
               type="password"
-              className={`input input-bordered w-full ${fieldErrors.confirmPassword ? "input-error" : ""}`}
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
+              className="input input-bordered w-full mt-3"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
-              placeholder="Re-enter password"
             />
-            {fieldErrors.confirmPassword && (
-              <label className="label">
-                <span className="label-text-alt text-error">✗ {fieldErrors.confirmPassword}</span>
-              </label>
-            )}
-          </div>
 
-          <button
-            className="btn btn-primary w-full mt-4"
-            onClick={handleReset}
-            disabled={!isFormValid || loading}
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-            {loading && <span className="loading loading-spinner loading-sm"></span>}
-          </button>
+            <button
+              className="btn btn-primary w-full mt-3"
+              onClick={handleResetPassword}
+              disabled={loading || !passwordValidation.isValid || !confirmPassword || newPassword !== confirmPassword}
+            >
+              {loading ? "Resetting..." : "Reset Password"}
+            </button>
+          </>
+        )}
 
-          <p className="text-sm text-center mt-4">
-            <Link to="/login" className="link link-primary">
-              Back to Login
-            </Link>
-          </p>
-        </div>
+        <p className="text-sm text-center mt-6">
+          Back to{" "}
+          <Link to="/login" className="link link-primary">
+            Login
+          </Link>
+        </p>
       </div>
     </div>
   );

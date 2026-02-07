@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,9 +12,31 @@ import ProtectedRoute from "./routes/PrivateGuard";
 import GuestRoute from "./routes/GuestGuard";
 import Navbar from "./pages/Navbar";
 
+function RecaptchaBadgeVisibility() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const authPaths = new Set([
+      "/",
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password"
+    ]);
+
+    const shouldShowBadge = authPaths.has(location.pathname);
+    document.querySelectorAll(".grecaptcha-badge").forEach((badge) => {
+      badge.style.display = shouldShowBadge ? "block" : "none";
+    });
+  }, [location.pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <RecaptchaBadgeVisibility />
       <Navbar />
       <Routes>
 

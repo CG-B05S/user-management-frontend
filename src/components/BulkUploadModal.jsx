@@ -51,7 +51,8 @@ export default function BulkUploadModal({ close, onSuccess }) {
       "Contact No": failedRow.data["Contact No"],
       "Address": failedRow.data["Address"],
       "Status": failedRow.data["Status"],
-      "Follow Up Date Time": failedRow.data["Follow Up Date Time"]
+      "Follow Up Date Time": failedRow.data["Follow Up Date Time"],
+      "Notes": failedRow.data["Notes"] || failedRow.data["Note"]
     }));
 
     // Create workbook and worksheet
@@ -66,7 +67,8 @@ export default function BulkUploadModal({ close, onSuccess }) {
       { wch: 15 }, // Contact No
       { wch: 25 }, // Address
       { wch: 15 }, // Status
-      { wch: 25 }  // Follow Up Date Time
+      { wch: 25 }, // Follow Up Date Time
+      { wch: 35 }  // Notes
     ];
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Failed Rows");

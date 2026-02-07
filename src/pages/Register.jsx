@@ -19,9 +19,28 @@ export default function Register() {
 
   // Load reCAPTCHA v3 script
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
-    document.head.appendChild(script);
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (!siteKey) return;
+
+    const scriptId = "recaptcha-v3-script";
+    let script = document.getElementById(scriptId);
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
+      document.head.appendChild(script);
+    }
+
+    document.querySelectorAll(".grecaptcha-badge").forEach((badge) => {
+      badge.style.visibility = "visible";
+      badge.style.opacity = "1";
+    });
+
+    return () => {
+      document.querySelectorAll(".grecaptcha-badge").forEach((badge) => badge.remove());
+      script?.remove();
+    };
   }, []);
 
   const validate = (name, value) => {
