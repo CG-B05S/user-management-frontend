@@ -44,14 +44,6 @@ export default function ResetPassword() {
       else if (!/^\d{6}$/.test(value.trim())) fieldError = "OTP must be 6 digits";
     }
 
-    if (name === "newPassword") {
-      if (!value) fieldError = "New password is required";
-      else {
-        const { isValid } = validatePassword(value);
-        if (!isValid) fieldError = "Password doesn't meet requirements";
-      }
-    }
-
     if (name === "confirmPassword") {
       if (!value) fieldError = "Confirm password is required";
       else if (form.newPassword && value !== form.newPassword) fieldError = "Passwords do not match";

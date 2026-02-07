@@ -37,14 +37,6 @@ export default function Register() {
         error = "Enter valid email";
     }
 
-    if (name === "password") {
-      if (!value) error = "Password is required";
-      else {
-        const { isValid } = validatePassword(value);
-        if (!isValid) error = "Password doesn't meet requirements";
-      }
-    }
-
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 

@@ -70,7 +70,7 @@ export default function VerifyOtp() {
       });
 
       localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
+      navigate("/dashboard", { state: { loggedIn: true } });
 
     } catch (err) {
       setAttemptsLeft((prev) => prev - 1);

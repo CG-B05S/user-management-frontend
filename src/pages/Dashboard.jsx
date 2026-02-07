@@ -2,7 +2,6 @@ import { useState } from "react";
 import UserTable from "../components/UserTable";
 import UserFormModal from "../components/UserFormModal";
 import BulkUploadModal from "../components/BulkUploadModal";
-import ProfileDropdown from "../components/ProfileDropdown";
 import Footer from "./Footer";
 
 export default function Dashboard() {
@@ -21,19 +20,6 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-
-            {/* HEADER */}
-            <div className="navbar bg-white shadow-md sticky top-0 z-50">
-                <div className="flex-1">
-                    <span className="text-2xl font-bold text-slate-800">
-                         User Management System
-                    </span>
-                </div>
-
-                <div className="flex-none">
-                    <ProfileDropdown />
-                </div>
-            </div>
 
             {/* CONTENT */}
             <div className="p-8 max-w-7xl mx-auto">

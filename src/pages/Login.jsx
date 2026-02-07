@@ -53,7 +53,7 @@ export default function Login() {
       const res = await API.post("/auth/login", form);
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
-        navigate("/dashboard");
+        navigate("/dashboard", { state: { loggedIn: true } });
       } else {
         setApiError("Login failed: No token received");
       }
