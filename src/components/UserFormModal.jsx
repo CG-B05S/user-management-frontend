@@ -22,6 +22,7 @@ export default function UserFormModal({
   editUser
 }) {
   const [form, setForm] = useState({
+    name: "",
     companyName: "",
     contactNumber: "",
     address: "",
@@ -38,6 +39,7 @@ export default function UserFormModal({
   useEffect(() => {
     if (editUser) {
       setForm({
+        name: editUser.name || "",
         companyName: editUser.companyName || "",
         contactNumber: editUser.contactNumber || "",
         address: editUser.address || "",
@@ -99,6 +101,21 @@ export default function UserFormModal({
         )}
 
         <div className="space-y-3">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-semibold text-slate-700">Name</span>
+            </label>
+            <input
+              className="input input-bordered w-full focus:input-primary focus:outline-none"
+              placeholder="Enter user name"
+              value={form.name}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
+              disabled={loading}
+            />
+          </div>
+
           <div className="form-control">
             <label className="label">
               <span className="label-text font-semibold text-slate-700">Company Name</span>

@@ -7,7 +7,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
     const [page, setPage] = useState(1);
     const [toast, setToast] = useState("");
     const [totalPages, setTotalPages] = useState(1);
-    const [deleteUserId, setDeleteUserId] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const showToast = (msg) => {
@@ -16,33 +16,33 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
     };
 
     const fetchUsers = async () => {
-        const res = await API.get(
-            `/users?page=${page}&search=${search}&status=${statusFilter}`
-        );
+        const res = await API.get("/users", {
+            params: {
+                page,
+                search,
+                status: statusFilter
+            }
+        });
         setUsers(res.data.users);
-        setTotalPages(res.data.pages);
-    };
+        setTotalPages(Math.max(res.data.pages || 1, 1));
 
-    const deleteUser = async (id) => {
-        try {
-            await API.delete(`/users/${id}`);
-            fetchUsers();
-            showToast("User deleted successfully");
-        } catch {
-            showToast("Delete failed");
+        if ((res.data.pages || 0) > 0 && page > res.data.pages) {
+            setPage(1);
         }
     };
 
     const confirmDelete = async () => {
+        if (!deleteTarget?._id) return;
+
         try {
-            await API.delete(`/users/${deleteUserId}`);
+            await API.delete(`/users/${deleteTarget._id}`);
             fetchUsers();
             showToast("User deleted successfully");
         } catch {
             showToast("Delete failed");
         } finally {
             setShowDeleteModal(false);
-            setDeleteUserId(null);
+            setDeleteTarget(null);
         }
     };
 
@@ -61,6 +61,10 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
         fetchUsers();
     }, [page, refresh, search, statusFilter]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter]);
+
     const statusColor = (status) => {
         switch (status) {
             case "received":
@@ -72,9 +76,9 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
             case "callback":
                 return "select-info border-blue-500 focus:border-blue-600";
             case "required":
-                return "select-success border-green-500 focus:border-green-600";
+                return "bg-green-50 border-green-300 text-green-700";
             case "not_required":
-                return "select-error border-red-500 focus:border-red-600";
+                return "bg-red-50 border-red-300 text-red-700";
             default:
                 return "";
         }
@@ -83,9 +87,9 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
     const getRowColor = (status) => {
         switch (status) {
             case "required":
-                return "bg-green-200 hover:bg-green-300";
+                return "bg-green-100/80";
             case "not_required":
-                return "bg-red-200 hover:bg-red-300";
+                return "bg-red-100/80";
             default:
                 return "";
         }
@@ -96,25 +100,26 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
             <Toast message={toast} />
 
             {/* TABLE */}
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="table table-sm table-fixed w-full">
-                    <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white sticky top-0">
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <table className="table table-fixed w-full">
+                    <thead className="bg-slate-900 text-white sticky top-0">
                         <tr>
-                            <th className="font-bold text-white w-14">S.No</th>
-                            <th className="font-bold text-white w-56">Company Name</th>
-                            <th className="font-bold text-white w-40">Contact Number</th>
-                            <th className="font-bold text-white w-24">Address</th>
-                            <th className="font-bold text-white w-32">Status</th>
-                            <th className="font-bold text-white w-40">Follow Up Date</th>
-                            <th className="font-bold text-white w-72">Notes</th>
-                            <th className="font-bold text-white text-center w-40">Actions</th>
+                            <th className="w-14 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">#</th>
+                            <th className="w-40 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Name</th>
+                            <th className="w-44 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Company</th>
+                            <th className="w-36 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Contact</th>
+                            <th className="w-56 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Address</th>
+                            <th className="w-36 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Status</th>
+                            <th className="w-40 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Follow Up</th>
+                            <th className="w-48 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Notes</th>
+                            <th className="w-32 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-200">Actions</th>
                         </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-slate-100">
                         {users.length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="text-center py-16">
+                                <td colSpan="9" className="text-center py-12">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="text-xl font-semibold text-slate-600">
                                             📭 No users found
@@ -127,15 +132,22 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                             </tr>
                         ) : (
                             users.map((u, index) => (
-                                <tr key={u._id} className={`${getRowColor(u.status)} transition-colors duration-200 font-medium hover:shadow-md`}>
-                                    <td className="font-semibold text-slate-700 py-2 text-sm">{index + 1}</td>
-                                    <td className="font-semibold text-slate-800 py-2 text-sm break-words">{u.companyName}</td>
-                                    <td className="text-slate-700 py-2 text-sm">{u.contactNumber || "N/A"}</td>
-                                    <td className="text-slate-600 py-2 text-sm">{u.address || "N/A"}</td>
+                                <tr key={u._id} className={`${getRowColor(u.status)} transition-colors duration-150 hover:bg-slate-50`}>
+                                    <td className="px-4 py-3 align-top text-sm font-semibold text-slate-600">
+                                        {((page - 1) * 10) + index + 1}
+                                    </td>
+                                    <td className="px-4 py-3 align-top text-sm font-semibold text-slate-900 break-words">{u.name || "N/A"}</td>
+                                    <td className="px-4 py-3 align-top text-sm font-medium text-slate-800 break-words">{u.companyName || "N/A"}</td>
+                                    <td className="px-4 py-3 align-top text-sm text-slate-700">{u.contactNumber || "N/A"}</td>
+                                    <td className="px-4 py-3 align-top text-sm text-slate-600">
+                                        <div className="line-clamp-3 break-words leading-5" title={u.address || "N/A"}>
+                                            {u.address || "N/A"}
+                                        </div>
+                                    </td>
 
-                                    <td className="py-2">
+                                    <td className="px-4 py-3 align-top">
                                         <select
-                                            className={`select select-xs select-bordered font-semibold text-sm ${statusColor(
+                                            className={`select select-sm h-10 min-h-0 w-full max-w-[132px] select-bordered text-sm font-medium ${statusColor(
                                                 u.status
                                             )}`}
                                             value={u.status}
@@ -153,29 +165,30 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                         </select>
                                     </td>
 
-                                    <td className="text-slate-700 py-2 text-sm">
+                                    <td className="px-4 py-3 align-top text-sm text-slate-700">
                                         {u.followUpDateTime
                                             ? new Date(
                                                 u.followUpDateTime
-                                            ).toLocaleString("en-US", { 
-                                                year: 'numeric', 
-                                                month: 'short', 
-                                                day: 'numeric', 
-                                                hour: '2-digit', 
-                                                minute: '2-digit' 
+                                            ).toLocaleString("en-US", {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit"
                                             })
                                             : "—"}
                                     </td>
 
-                                    <td className="text-slate-600 py-2 text-sm">
-                                        <div className="block w-full truncate whitespace-nowrap overflow-hidden" title={u.notes || "N/A"}>
+                                    <td className="px-4 py-3 align-top text-sm text-slate-600">
+                                        <div className="block w-full truncate" title={u.notes || "N/A"}>
                                             {u.notes || "N/A"}
                                         </div>
                                     </td>
 
-                                    <td className="flex gap-1 justify-center py-2">
+                                    <td className="px-4 py-3 align-top">
+                                        <div className="flex justify-center gap-2">
                                         <button
-                                            className="btn btn-xs btn-accent gap-1 hover:bg-purple-700 text-white font-semibold"
+                                            className="btn btn-xs h-8 min-h-0 px-3 btn-accent text-white"
                                             onClick={() => onEdit(u)}
                                             title="Edit user"
                                         >
@@ -183,15 +196,16 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                         </button>
 
                                         <button
-                                            className="btn btn-xs btn-error gap-1 hover:bg-red-700 text-white font-semibold"
+                                            className="btn btn-xs h-8 min-h-0 px-3 btn-error text-white"
                                             onClick={() => {
-                                                setDeleteUserId(u._id);
+                                                setDeleteTarget(u);
                                                 setShowDeleteModal(true);
                                             }}
                                             title="Delete user"
                                         >
                                             🗑️ Delete
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -200,8 +214,8 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                 </table>
 
                 {/* PAGINATION */}
-                {totalPages > 0 && (
-                <div className="flex justify-end items-center py-4 px-4 bg-slate-50">
+                {users.length > 0 && totalPages > 0 && (
+                <div className="flex justify-end items-center py-3 px-4 bg-slate-50 border-t border-slate-200">
                     <div className="join">
                         <button
                             className="join-item btn btn-sm"
@@ -242,6 +256,12 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                             Are you sure you want to delete this user?
                             This action cannot be undone.
                         </p>
+
+                        <div className="rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-700">
+                            <div><strong>Name:</strong> {deleteTarget?.name || "N/A"}</div>
+                            <div><strong>Company:</strong> {deleteTarget?.companyName || "N/A"}</div>
+                            <div><strong>Contact:</strong> {deleteTarget?.contactNumber || "N/A"}</div>
+                        </div>
 
                         <div className="modal-action">
                             <button

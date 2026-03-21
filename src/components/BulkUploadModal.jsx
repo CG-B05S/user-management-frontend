@@ -47,11 +47,12 @@ export default function BulkUploadModal({ close, onSuccess }) {
     const excelData = result.failedRows.map((failedRow) => ({
       "Row #": failedRow.rowNumber,
       "Reason": failedRow.reason,
-      "COMPANY  NAME": failedRow.data["COMPANY  NAME"],
-      "Contact No": failedRow.data["Contact No"],
-      "Address": failedRow.data["Address"],
-      "Status": failedRow.data["Status"],
-      "Follow Up Date Time": failedRow.data["Follow Up Date Time"],
+      "Name": failedRow.data["Name"] || failedRow.data["name"] || failedRow.data["Customer Name"] || "",
+      "COMPANY  NAME": failedRow.data["COMPANY  NAME"] || failedRow.data["Company Name"] || failedRow.data["companyName"] || "",
+      "Contact No": failedRow.data["Contact No"] || failedRow.data["Contact Number"] || failedRow.data["Phone"] || "",
+      "Address": failedRow.data["Address"] || "",
+      "Status": failedRow.data["Status"] || "",
+      "Follow Up Date Time": failedRow.data["Follow Up Date Time"] || failedRow.data["Follow Up Date"] || "",
       "Notes": failedRow.data["Notes"] || failedRow.data["Note"]
     }));
 
@@ -63,6 +64,7 @@ export default function BulkUploadModal({ close, onSuccess }) {
     worksheet["!cols"] = [
       { wch: 8 },  // Row #
       { wch: 30 }, // Reason
+      { wch: 25 }, // Name
       { wch: 25 }, // Company Name
       { wch: 15 }, // Contact No
       { wch: 25 }, // Address

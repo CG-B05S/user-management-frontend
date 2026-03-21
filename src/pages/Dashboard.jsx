@@ -22,21 +22,21 @@ export default function Dashboard() {
         <div className="h-full bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
 
             {/* CONTENT */}
-            <div className="p-8 max-w-8xl mx-auto w-full flex-1">
+            <div className="p-4 md:p-5 max-w-[1600px] mx-auto w-full flex-1">
 
-                <div className="card bg-white shadow-lg rounded-xl">
-                    <div className="card-body p-8">
+                <div className="card bg-white shadow-md rounded-2xl border border-slate-200">
+                    <div className="card-body p-4 md:p-5">
 
                         {/* TOOLBAR */}
-                        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
 
                             {/* LEFT SIDE - FILTERS */}
-                            <div className="flex gap-4 flex-wrap">
+                            <div className="flex gap-3 flex-wrap">
                                 <div className="form-control">
                                     <input
                                         type="text"
-                                        placeholder="Search company or contact..."
-                                        className="input input-bordered w-72 focus:input-primary focus:outline-none"
+                                        placeholder="Search name, company or contact..."
+                                        className="input input-bordered h-11 w-64 md:w-72 focus:input-primary focus:outline-none"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
@@ -44,7 +44,7 @@ export default function Dashboard() {
 
                                 <div className="form-control">
                                     <select
-                                        className="select select-bordered w-56 focus:select-primary focus:outline-none"
+                                        className="select select-bordered h-11 w-44 md:w-52 focus:select-primary focus:outline-none"
                                         value={statusFilter}
                                         onChange={(e) => setStatusFilter(e.target.value)}
                                     >
@@ -61,16 +61,16 @@ export default function Dashboard() {
                             </div>
 
                             {/* RIGHT SIDE - ACTIONS */}
-                            <div className="flex gap-3">
+                            <div className="flex gap-2">
                                 <button
-                                    className="btn btn-outline btn-md gap-2 hover:btn-primary"
+                                    className="btn btn-outline btn-sm md:btn-md gap-2 hover:btn-primary"
                                     onClick={() => setBulkOpen(true)}
                                 >
                                     📥 Bulk Upload
                                 </button>
 
                                 <button
-                                    className="btn btn-primary btn-md gap-2"
+                                    className="btn btn-primary btn-sm md:btn-md gap-2"
                                     onClick={() => setOpenModal(true)}
                                 >
                                      Add User
