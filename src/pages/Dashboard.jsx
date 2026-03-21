@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UserTable from "../components/UserTable";
+import UserTable from "../components/UserTableEnhanced";
 import UserFormModal from "../components/UserFormModal";
 import BulkUploadModal from "../components/BulkUploadModal";
 import Footer from "./Footer";
@@ -13,6 +13,10 @@ export default function Dashboard() {
     // NEW STATES (moved from table)
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [followUpFilter, setFollowUpFilter] = useState("");
+    const [followUpStateFilter, setFollowUpStateFilter] = useState("");
+    const [customFollowUpStart, setCustomFollowUpStart] = useState("");
+    const [customFollowUpEnd, setCustomFollowUpEnd] = useState("");
 
     const refreshTable = () => {
         setRefresh(prev => !prev);
@@ -58,6 +62,76 @@ export default function Dashboard() {
                                     </select>
                                 </div>
 
+                                <div className="form-control">
+                                    <select
+                                        className="select select-bordered h-11 w-44 md:w-52 focus:select-primary focus:outline-none"
+                                        value={followUpFilter}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setFollowUpFilter(value);
+                                            if (value !== "custom") {
+                                                setCustomFollowUpStart("");
+                                                setCustomFollowUpEnd("");
+                                            }
+                                        }}
+                                    >
+                                        <option value="">All Follow Up</option>
+                                        <option value="5m">5 mins</option>
+                                        <option value="15m">15 mins</option>
+                                        <option value="30m">30 mins</option>
+                                        <option value="1h">1 hour</option>
+                                        <option value="3h">3 hours</option>
+                                        <option value="6h">6 hours</option>
+                                        <option value="1d">1 day</option>
+                                        <option value="2d">2 days</option>
+                                        <option value="7d">7 days</option>
+                                        <option value="15d">15 days</option>
+                                        <option value="30d">30 days</option>
+                                        <option value="custom">Custom date</option>
+                                    </select>
+                                </div>
+
+                                <div className="form-control">
+                                    <select
+                                        className="select select-bordered h-11 w-44 md:w-52 focus:select-primary focus:outline-none"
+                                        value={followUpStateFilter}
+                                        onChange={(e) => setFollowUpStateFilter(e.target.value)}
+                                    >
+                                        <option value="">All Follow Up State</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="missed">Missed</option>
+                                        <option value="done">Done</option>
+                                    </select>
+                                </div>
+
+                                {followUpFilter === "custom" && (
+                                    <>
+                                        <div className="form-control">
+                                            <label className="label py-1">
+                                                <span className="label-text text-xs font-medium text-slate-600">From</span>
+                                            </label>
+                                            <input
+                                                type="datetime-local"
+                                                className="input input-bordered h-11 w-56 md:w-64 focus:input-primary focus:outline-none"
+                                                value={customFollowUpStart}
+                                                onChange={(e) => setCustomFollowUpStart(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="form-control">
+                                            <label className="label py-1">
+                                                <span className="label-text text-xs font-medium text-slate-600">To </span>
+                                            </label>
+                                            <input
+                                                type="datetime-local"
+                                                className="input input-bordered h-11 w-56 md:w-64 focus:input-primary focus:outline-none"
+                                                value={customFollowUpEnd}
+                                                onChange={(e) => setCustomFollowUpEnd(e.target.value)}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
                             </div>
 
                             {/* RIGHT SIDE - ACTIONS */}
@@ -83,6 +157,10 @@ export default function Dashboard() {
                             refresh={refresh}
                             search={search}
                             statusFilter={statusFilter}
+                            followUpFilter={followUpFilter}
+                            followUpStateFilter={followUpStateFilter}
+                            customFollowUpStart={customFollowUpStart}
+                            customFollowUpEnd={customFollowUpEnd}
                             onEdit={setEditUser}
                         />
 

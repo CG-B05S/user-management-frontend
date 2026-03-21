@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import Toast from "./Toast";
 
-export default function UserTable({ refresh, search, statusFilter, onEdit }) {
+export default function UserTable({
+    refresh,
+    search,
+    statusFilter,
+    followUpFilter,
+    customFollowUpStart,
+    customFollowUpEnd,
+    onEdit
+}) {
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
     const [toast, setToast] = useState("");
@@ -15,12 +23,26 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
         setTimeout(() => setToast(""), 2500);
     };
 
+    const toIsoDateTime = (value) => {
+        if (!value) return "";
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString();
+    };
+
     const fetchUsers = async () => {
+        const normalizedCustomFollowUpStart =
+            followUpFilter === "custom" ? toIsoDateTime(customFollowUpStart) : "";
+        const normalizedCustomFollowUpEnd =
+            followUpFilter === "custom" ? toIsoDateTime(customFollowUpEnd) : "";
+
         const res = await API.get("/users", {
             params: {
                 page,
                 search,
-                status: statusFilter
+                status: statusFilter,
+                followUp: followUpFilter,
+                customFollowUpStart: normalizedCustomFollowUpStart,
+                customFollowUpEnd: normalizedCustomFollowUpEnd
             }
         });
         setUsers(res.data.users);
@@ -46,6 +68,19 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
         }
     };
 
+    const markFollowUpDone = async (user) => {
+        try {
+            await API.put(`/users/${user._id}`, {
+                followUpStatus: "done",
+                followUpCompletedAt: new Date().toISOString()
+            });
+            fetchUsers();
+            showToast("Follow-up marked done");
+        } catch {
+            showToast("Follow-up update failed");
+        }
+    };
+
 
     const updateStatus = async (id, status) => {
         try {
@@ -59,11 +94,11 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
 
     useEffect(() => {
         fetchUsers();
-    }, [page, refresh, search, statusFilter]);
+    }, [page, refresh, search, statusFilter, followUpFilter, customFollowUpStart, customFollowUpEnd]);
 
     useEffect(() => {
         setPage(1);
-    }, [search, statusFilter]);
+    }, [search, statusFilter, followUpFilter, customFollowUpStart, customFollowUpEnd]);
 
     const statusColor = (status) => {
         switch (status) {
@@ -87,11 +122,37 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
     const getRowColor = (status) => {
         switch (status) {
             case "required":
-                return "bg-green-100/80";
+                return "bg-green-100/80 hover:bg-green-100";
             case "not_required":
-                return "bg-red-100/80";
+                return "bg-red-100/80 hover:bg-red-100";
             default:
                 return "";
+        }
+    };
+
+    const getFollowUpBadge = (user) => {
+        switch (user.computedFollowUpStatus) {
+            case "done":
+                return "badge badge-success badge-outline";
+            case "missed":
+                return "badge badge-error badge-outline";
+            case "pending":
+                return "badge badge-warning badge-outline";
+            default:
+                return "badge badge-ghost";
+        }
+    };
+
+    const getFollowUpLabel = (user) => {
+        switch (user.computedFollowUpStatus) {
+            case "done":
+                return "Done";
+            case "missed":
+                return "Missed";
+            case "pending":
+                return "Pending";
+            default:
+                return "No Follow-up";
         }
     };
 
@@ -101,18 +162,18 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
 
             {/* TABLE */}
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                <table className="table table-fixed w-full">
+                <table className="table w-full">
                     <thead className="bg-slate-900 text-white sticky top-0">
                         <tr>
-                            <th className="w-14 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">#</th>
-                            <th className="w-40 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Name</th>
-                            <th className="w-44 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Company</th>
-                            <th className="w-36 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Contact</th>
-                            <th className="w-56 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Address</th>
-                            <th className="w-36 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Status</th>
-                            <th className="w-40 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Follow Up</th>
-                            <th className="w-48 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Notes</th>
-                            <th className="w-32 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-200">Actions</th>
+                            <th className="w-12 px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">#</th>
+                            <th className="min-w-[110px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Name</th>
+                            <th className="min-w-[130px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Company</th>
+                            <th className="min-w-[110px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Contact</th>
+                            <th className="min-w-[220px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Address</th>
+                            <th className="min-w-[120px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Status</th>
+                            <th className="min-w-[220px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Follow Up</th>
+                            <th className="min-w-[120px] px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-200">Notes</th>
+                            <th className="min-w-[120px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-200">Actions</th>
                         </tr>
                     </thead>
 
@@ -133,21 +194,21 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                         ) : (
                             users.map((u, index) => (
                                 <tr key={u._id} className={`${getRowColor(u.status)} transition-colors duration-150 hover:bg-slate-50`}>
-                                    <td className="px-4 py-3 align-top text-sm font-semibold text-slate-600">
+                                    <td className="px-3 py-3 align-top text-sm font-semibold text-slate-600">
                                         {((page - 1) * 10) + index + 1}
                                     </td>
-                                    <td className="px-4 py-3 align-top text-sm font-semibold text-slate-900 break-words">{u.name || "N/A"}</td>
-                                    <td className="px-4 py-3 align-top text-sm font-medium text-slate-800 break-words">{u.companyName || "N/A"}</td>
-                                    <td className="px-4 py-3 align-top text-sm text-slate-700">{u.contactNumber || "N/A"}</td>
-                                    <td className="px-4 py-3 align-top text-sm text-slate-600">
+                                    <td className="px-3 py-3 align-top text-sm font-semibold text-slate-900 break-words">{u.name || "N/A"}</td>
+                                    <td className="px-3 py-3 align-top text-sm font-medium text-slate-800 break-words">{u.companyName || "N/A"}</td>
+                                    <td className="px-3 py-3 align-top text-sm text-slate-700">{u.contactNumber || "N/A"}</td>
+                                    <td className="px-3 py-3 align-top text-sm text-slate-600">
                                         <div className="line-clamp-3 break-words leading-5" title={u.address || "N/A"}>
                                             {u.address || "N/A"}
                                         </div>
                                     </td>
 
-                                    <td className="px-4 py-3 align-top">
+                                    <td className="px-3 py-3 align-top">
                                         <select
-                                            className={`select select-sm h-10 min-h-0 w-full max-w-[132px] select-bordered text-sm font-medium ${statusColor(
+                                            className={`select select-sm h-10 min-h-0 w-full max-w-[120px] select-bordered text-sm font-medium ${statusColor(
                                                 u.status
                                             )}`}
                                             value={u.status}
@@ -165,7 +226,7 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                         </select>
                                     </td>
 
-                                    <td className="px-4 py-3 align-top text-sm text-slate-700">
+                                    <td className="px-3 py-3 align-top text-sm text-slate-700">
                                         {u.followUpDateTime
                                             ? new Date(
                                                 u.followUpDateTime
@@ -179,13 +240,13 @@ export default function UserTable({ refresh, search, statusFilter, onEdit }) {
                                             : "—"}
                                     </td>
 
-                                    <td className="px-4 py-3 align-top text-sm text-slate-600">
+                                    <td className="px-3 py-3 align-top text-sm text-slate-600">
                                         <div className="block w-full truncate" title={u.notes || "N/A"}>
                                             {u.notes || "N/A"}
                                         </div>
                                     </td>
 
-                                    <td className="px-4 py-3 align-top">
+                                    <td className="px-3 py-3 align-top">
                                         <div className="flex justify-center gap-2">
                                         <button
                                             className="btn btn-xs h-8 min-h-0 px-3 btn-accent text-white"
